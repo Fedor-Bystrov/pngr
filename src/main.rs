@@ -65,10 +65,11 @@ fn main() {
 
     let image = PngImage::new(chunks);
 
-    println!("width: {}", image.width);
-    println!("height: {}", image.height);
-    println!("bit_depth: {}", image.bit_depth);
-    println!("colour_type: {}", image.colour_type);
+    println!("Image data:");
+    println!("- width: {}", image.width);
+    println!("- height: {}", image.height);
+    println!("- bit_depth: {}", image.bit_depth);
+    println!("- colour_type: {}", image.colour_type);
 }
 
 fn parse_chunks(image_data: &[u8]) -> Vec<Chunk> {
