@@ -18,7 +18,7 @@ fn main() {
     println!("Reading image file - OK");
     println!("Reading chunks...");
 
-    let chunks = read_chunks(data);
+    let chunks = parse_chunks(data);
 
     for chunk in chunks {
         println!("chunk_length: {}", chunk.length());
@@ -29,7 +29,7 @@ fn main() {
     println!("Reading chunks - OK");
 }
 
-fn read_chunks(image_data: &[u8]) -> Vec<Chunk> {
+fn parse_chunks(image_data: &[u8]) -> Vec<Chunk> {
     let mut data = image_data;
     let mut chunks: Vec<Chunk> = Vec::new();
 
