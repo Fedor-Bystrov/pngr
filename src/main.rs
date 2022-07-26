@@ -1,3 +1,8 @@
+//
+// PNG (Portable Network Graphics) Specification, Version 1.2
+// http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+//
+
 mod lib;
 
 use lib::Chunk;
@@ -65,8 +70,6 @@ impl PngImage {
         image.pallete = pallete;
     }
 }
-
-// spec http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
 
 fn main() {
     println!("Reading image file...");
