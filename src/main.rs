@@ -5,8 +5,9 @@
 
 mod lib;
 
+use flate2::read::ZlibDecoder;
 use lib::Chunk;
-use std::fs;
+use std::{fs, io::Read};
 
 const PNG_HEADER: [u8; 8] = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
@@ -15,6 +16,7 @@ pub struct PngImage {
     height: u32,
     bit_depth: u8,
     colour_type: u8,
+    compression_method: u8,
     pallete: Vec<PalleteItem>,
 }
 
@@ -32,6 +34,7 @@ impl PngImage {
             height: 0,
             bit_depth: 0,
             colour_type: 0,
+            compression_method: 0,
             pallete: vec![],
         };
 
@@ -39,6 +42,7 @@ impl PngImage {
             match chunk.chunk_type().as_str() {
                 "IHDR" => Self::parse_ihdr(chunk, &mut image),
                 "PLTE" => Self::parse_plte(chunk, &mut image),
+                "IDAT" => Self::parse_idat(chunk, &mut image),
                 _ => println!("{}", chunk.chunk_type()),
             }
         }
@@ -51,6 +55,7 @@ impl PngImage {
         image.height = u32::from_be_bytes(chunk.data()[4..8].try_into().unwrap());
         image.bit_depth = chunk.data()[8];
         image.colour_type = chunk.data()[9];
+        image.compression_method = chunk.data()[10];
     }
 
     fn parse_plte(chunk: Chunk, image: &mut PngImage) {
@@ -68,6 +73,14 @@ impl PngImage {
         }
 
         image.pallete = pallete;
+    }
+
+    fn parse_idat(chunk: Chunk, image: &mut PngImage) {
+        let mut decoder = ZlibDecoder::new(chunk.data().as_slice());
+        let mut buffer = Vec::new();
+        decoder.read_to_end(&mut buffer);
+        // .expect("IDAT decoding error");
+        print!("{:?}", buffer);
     }
 }
 
@@ -102,8 +115,8 @@ fn main() {
     println!("- height: {}", image.height);
     println!("- bit_depth: {}", image.bit_depth);
     println!("- colour_type: {}", image.colour_type);
+    println!("- compression_method: {}", image.compression_method);
     println!("- pallete len: {}", image.pallete.len());
-    println!("- pallete: {:?}", image.pallete);
 }
 
 fn parse_chunks(image_data: &[u8]) -> Vec<Chunk> {
