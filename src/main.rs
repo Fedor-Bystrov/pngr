@@ -10,6 +10,14 @@ pub struct PngImage {
     height: u32,
     bit_depth: u8,
     colour_type: u8,
+    pallete: Vec<PalleteItem>,
+}
+
+#[derive(Debug)]
+pub struct PalleteItem {
+    pub red: u8,
+    pub green: u8,
+    pub blue: u8,
 }
 
 impl PngImage {
@@ -19,11 +27,13 @@ impl PngImage {
             height: 0,
             bit_depth: 0,
             colour_type: 0,
+            pallete: vec![],
         };
 
         for chunk in chunks {
             match chunk.chunk_type().as_str() {
                 "IHDR" => Self::parse_ihdr(chunk, &mut image),
+                "PLTE" => Self::parse_plte(chunk, &mut image),
                 _ => println!("{}", chunk.chunk_type()),
             }
         }
@@ -37,7 +47,26 @@ impl PngImage {
         image.bit_depth = chunk.data()[8];
         image.colour_type = chunk.data()[9];
     }
+
+    fn parse_plte(chunk: Chunk, image: &mut PngImage) {
+        let mut pallete: Vec<PalleteItem> = Vec::new();
+
+        let mut offset = 0;
+
+        while offset + 3 < chunk.data().len() {
+            pallete.push(PalleteItem {
+                red: chunk.data()[offset],
+                green: chunk.data()[offset + 1],
+                blue: chunk.data()[offset + 2],
+            });
+            offset += 3;
+        }
+
+        image.pallete = pallete;
+    }
 }
+
+// spec http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
 
 fn main() {
     println!("Reading image file...");
@@ -70,6 +99,8 @@ fn main() {
     println!("- height: {}", image.height);
     println!("- bit_depth: {}", image.bit_depth);
     println!("- colour_type: {}", image.colour_type);
+    println!("- pallete len: {}", image.pallete.len());
+    println!("- pallete: {:?}", image.pallete);
 }
 
 fn parse_chunks(image_data: &[u8]) -> Vec<Chunk> {
